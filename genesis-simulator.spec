@@ -13,6 +13,7 @@ License: GPLv2.1+ plus LGPLv2.1+
 BuildRequires: bison flex flex-devel
 BuildRequires: ncurses-devel
 BuildRequires: libX11-devel libXt-devel
+BuildRequires: netcdf-devel
 
 %description
 GENESIS (short for GEneral NEural SImulation System) is a general
@@ -39,6 +40,8 @@ Summary: Documentation for %{name}
 
 %prep
 %setup -q -n %{realname}-%{version}/%{realname}
+rm -rf ./src/diskio/interface/netcdf/netcdf-3.4
+sed -i 's/netcdflib.o: netcdflib/netcdflib.o:/' ./src/diskio/interface/netcdf/Makefile
 cp src/Makefile.dist src/Makefile
 cat >>src/Makefile <<EOF
 MACHINE=Linux
@@ -53,9 +56,11 @@ AR=ar
 YACC=bison -y
 LEX=flex -l
 LEXLIB=-lfl
-LIBS=\$(LEXLIB) -lm
+LIBS=\$(LEXLIB) -lm -lnetcdf
 TERMCAP=-lncurses
 TERMOPT=-DTERMIO -DDONT_USE_SIGIO
+NETCDFOBJ = \
+        \$(DISKIODIR)/interface/\$(NETCDFSUBDIR)/netcdflib.o
 EOF
 
 %build
