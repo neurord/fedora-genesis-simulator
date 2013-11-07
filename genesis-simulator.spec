@@ -1,5 +1,6 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 %global realname genesis
+%global instdir %{_datadir}/%{name}
 
 Name: genesis-simulator
 Summary: A general purpose simulation platform
@@ -66,21 +67,37 @@ test -n "%{buildroot}"
 install -D src/genesis %{buildroot}%{_bindir}/genesis
 install -D src/convert/convert %{buildroot}%{_bindir}/genesis-convert
 install -D man/man1/convert.1 %{buildroot}%{_mandir}/man1/genesis-convert.1
+mkdir -p %{buildroot}%{instdir}
+cp -rp src/startup %{buildroot}%{instdir}/
+cp -rp Scripts %{buildroot}%{instdir}/
 #find %{buildroot}%{_datarootdir}/%{name} -name *.o -delete
 
 mkdir -p %{buildroot}%{_pkgdocdir}
-cp Doc -r %{buildroot}%{_pkgdocdir}/
-cp Tutorials -r %{buildroot}%{_pkgdocdir}/
-cp Hyperdoc -r %{buildroot}%{_pkgdocdir}/Manual
+cp Doc Tutorials Hyperdoc -r %{buildroot}%{_pkgdocdir}/
+
+cat >>%{buildroot}%{_datadir}/%{name}/startup/.simrc <<EOF
+setenv SIMPATH . \
+               %{instdir}/startup \
+               %{instdir}/Scripts/neurokit \
+               %{instdir}/Scripts/neurokit/prototypes
+setenv SIMNOTES {getenv HOME}/.genesis-notes
+setenv GENESIS_HELP %{_pkgdocdir}/Doc
+
+# set up default schedule
+schedule
+EOF
+
+# add emacs mode
 
 %files
 %{_bindir}/*
+%{_datadir}/%{name}
 %{_mandir}/man1/*
 %doc AUTHORS COPYRIGHT CONTACTING.GENESIS ChangeLog GPLicense LGPLicense
 %exclude %{_pkgdocdir}/Tutorials/
-%exclude %{_pkgdocdir}/Manual/
+%exclude %{_pkgdocdir}/Hyperdoc/
 
 %files docs
 %dir %doc %{_pkgdocdir}
 %doc %{_pkgdocdir}/Tutorials/
-%doc %{_pkgdocdir}/Manual/
+%doc %{_pkgdocdir}/Hyperdoc/
