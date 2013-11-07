@@ -1,5 +1,7 @@
-Name: genesis-simulator
+%{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 %global realname genesis
+
+Name: genesis-simulator
 Summary: A general purpose simulation platform
 Version: 2.3
 Release: 1%{?dist}
@@ -24,6 +26,11 @@ current GENESIS applications involve realistic simulations of
 biological neural systems. Although the software can also model more
 abstract networks, other simulators are more suitable for
 backpropagation and similar connectionist modeling.
+
+%package docs
+Summary: Documentation for %{name}
+%description docs
+%{_summary}.
 
 %ifarch x86_64
 %global extraflags -DLONGWORDS
@@ -52,9 +59,7 @@ EOF
 
 %build
 # if arch == 32: CFLAGS='-O2 -D__NO_MATH_INLINES'
-make -C src
-
-%{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
+make -C src %{?_smp_mflags}
 
 %install
 test -n "%{buildroot}"
@@ -72,3 +77,10 @@ cp Hyperdoc -r %{buildroot}%{_pkgdocdir}/Manual
 %{_bindir}/*
 %{_mandir}/man1/*
 %doc AUTHORS COPYRIGHT CONTACTING.GENESIS ChangeLog GPLicense LGPLicense
+%exclude %{_pkgdocdir}/Tutorials/
+%exclude %{_pkgdocdir}/Manual/
+
+%files docs
+%dir %doc %{_pkgdocdir}
+%doc %{_pkgdocdir}/Tutorials/
+%doc %{_pkgdocdir}/Manual/
