@@ -7,7 +7,7 @@ Url: http://www.genesis-sim.org/GENESIS/
 Source0: http://www.genesis-sim.org/GENESIS/genesis-ftp/%{realname}-%{version}-src.tar.bz2
 License: GPLv2.1+ plus LGPLv2.1+
 
-BuildRequires: bison flex
+BuildRequires: bison flex flex-devel
 BuildRequires: ncurses-devel
 BuildRequires: libX11-devel libXt-devel
 
