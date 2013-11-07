@@ -29,6 +29,11 @@ biological neural systems. Although the software can also model more
 abstract networks, other simulators are more suitable for
 backpropagation and similar connectionist modeling.
 
+%package devel
+Summary: Static library and tools for building genesis extensions
+%description devel
+%{_summary}.
+
 %package docs
 Summary: Documentation for %{name}
 %description docs
@@ -61,11 +66,20 @@ TERMCAP=-lncurses
 TERMOPT=-DTERMIO -DDONT_USE_SIGIO
 NETCDFOBJ = \
         \$(DISKIODIR)/interface/\$(NETCDFSUBDIR)/netcdflib.o
+
+libgenesis.a:
+	@make -f \$(MF) CC="\$(CC)" TMPDIR="\$(TMPDIR)" LD="\$(LD)" CPP="\$(CPP)" YACC="\$(YACC)" LEX="\$(LEX)" LEXLIB="\$(LEXLIB)" OS="\$(OS)" MACHINE="\$(MACHINE)" INSTALLDIR="\$(INSTALLDIR)" INSTALLBIN="\$(INSTALLBIN)" CFLAGS_IN="\$(CFLAGS)" IRIX_HACK="\$(IRIX_HACK)" LDFLAGS="\$(LDFLAGS)" LIBS="\$(LIBS)" MF="\$(MF)" TERMCAP="\$(TERMCAP)" TERMOPT="\$(TERMOPT)" SUBDIR="\$(SUBDIR)" NXSUBDIR="\$(NXSUBDIR)" MINSUBDIR="\$(MINSUBDIR)" BASECODE="\$(BASECODE)" OBJLIBS="\$(OBJLIBS)" EXTRALIBS="\$(EXTRALIBS)" \$@
+EOF
+cat >>src/Makefile.BASE <<EOF
+libgenesis.a: libs \$(GENESIS) \$(XODUS)
+	\$(AR) rc \$@ \$(LDFLAGS) \$(GENESIS) \$(XODUS)
 EOF
 
 %build
 # if arch == 32: CFLAGS='-O2 -D__NO_MATH_INLINES'
-make -C src %{?_smp_mflags}
+make -C src %{?_smp_mflags} genesis
+make -C src %{?_smp_mflags} libgenesis.a
+# doesn't work if done together :(
 
 %install
 test -n "%{buildroot}"
@@ -75,7 +89,9 @@ install -D man/man1/convert.1 %{buildroot}%{_mandir}/man1/genesis-convert.1
 mkdir -p %{buildroot}%{instdir}
 cp -rp src/startup %{buildroot}%{instdir}/
 cp -rp Scripts %{buildroot}%{instdir}/
-#find %{buildroot}%{_datarootdir}/%{name} -name *.o -delete
+install -D src/libgenesis.a %{buildroot}%{_libdir}/libgenesis.a
+mkdir -p %{buildroot}%{_libexecdir}/genesis
+cp src/sys/code_{func,g,lib,sym} %{buildroot}%{_libexecdir}/genesis/
 
 mkdir -p %{buildroot}%{_pkgdocdir}
 cp Doc Tutorials Hyperdoc -r %{buildroot}%{_pkgdocdir}/
@@ -94,6 +110,8 @@ EOF
 
 # add emacs mode
 
+#make NETCDFOBJ='$(SIMLIB)/netcdflib.o %{_libdir}/libnetcdf.a'
+
 %files
 %{_bindir}/*
 %{_datadir}/%{name}
@@ -101,6 +119,11 @@ EOF
 %doc AUTHORS COPYRIGHT CONTACTING.GENESIS ChangeLog GPLicense LGPLicense
 %exclude %{_pkgdocdir}/Tutorials/
 %exclude %{_pkgdocdir}/Hyperdoc/
+
+%files devel
+%doc COPYRIGHT
+%{_libdir}/libgenesis.a
+%{_libexecdir}/genesis/
 
 %files docs
 %dir %doc %{_pkgdocdir}
