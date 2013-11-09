@@ -2,13 +2,13 @@
 %global realname genesis
 %global instdir %{_datadir}/%{name}
 
-Name: genesis-simulator
+Name: %{realname}-simulator
 Summary: A general purpose simulation platform
 Version: 2.3
 Release: 1%{?dist}
 Url: http://www.genesis-sim.org/GENESIS/
 Source0: http://www.genesis-sim.org/GENESIS/genesis-ftp/%{realname}-%{version}-src.tar.bz2
-License: GPLv2.1+ plus LGPLv2.1+
+License: GPLv2.1+ and LGPLv2.1+
 
 BuildRequires: bison flex flex-devel
 BuildRequires: ncurses-devel
@@ -35,6 +35,7 @@ Summary: Static library and tools for building genesis extensions
 %{_summary}.
 
 %package docs
+BuildArch: noarch
 Summary: Documentation for %{name}
 %description docs
 %{_summary}.
@@ -66,37 +67,31 @@ TERMCAP=-lncurses
 TERMOPT=-DTERMIO -DDONT_USE_SIGIO
 NETCDFOBJ = \
         \$(DISKIODIR)/interface/\$(NETCDFSUBDIR)/netcdflib.o
-
-libgenesis.a:
-	@make -f \$(MF) CC="\$(CC)" TMPDIR="\$(TMPDIR)" LD="\$(LD)" CPP="\$(CPP)" YACC="\$(YACC)" LEX="\$(LEX)" LEXLIB="\$(LEXLIB)" OS="\$(OS)" MACHINE="\$(MACHINE)" INSTALLDIR="\$(INSTALLDIR)" INSTALLBIN="\$(INSTALLBIN)" CFLAGS_IN="\$(CFLAGS)" IRIX_HACK="\$(IRIX_HACK)" LDFLAGS="\$(LDFLAGS)" LIBS="\$(LIBS)" MF="\$(MF)" TERMCAP="\$(TERMCAP)" TERMOPT="\$(TERMOPT)" SUBDIR="\$(SUBDIR)" NXSUBDIR="\$(NXSUBDIR)" MINSUBDIR="\$(MINSUBDIR)" BASECODE="\$(BASECODE)" OBJLIBS="\$(OBJLIBS)" EXTRALIBS="\$(EXTRALIBS)" \$@
-EOF
-cat >>src/Makefile.BASE <<EOF
-libgenesis.a: libs \$(GENESIS) \$(XODUS)
-	\$(AR) rc \$@ \$(LDFLAGS) \$(GENESIS) \$(XODUS)
 EOF
 
 %build
 # if arch == 32: CFLAGS='-O2 -D__NO_MATH_INLINES'
 make -C src %{?_smp_mflags} genesis
-make -C src %{?_smp_mflags} libgenesis.a
-# doesn't work if done together :(
 
 %install
-test -n "%{buildroot}"
-install -D src/genesis %{buildroot}%{_bindir}/genesis
-install -D src/convert/convert %{buildroot}%{_bindir}/genesis-convert
-install -D man/man1/convert.1 %{buildroot}%{_mandir}/man1/genesis-convert.1
-mkdir -p %{buildroot}%{instdir}
-cp -rp src/startup %{buildroot}%{instdir}/
-cp -rp Scripts %{buildroot}%{instdir}/
-install -D src/libgenesis.a %{buildroot}%{_libdir}/libgenesis.a
-mkdir -p %{buildroot}%{_libexecdir}/genesis
-cp src/sys/code_{func,g,lib,sym} %{buildroot}%{_libexecdir}/genesis/
+make -C src install INSTALLDIR=%{buildroot}%{_libdir}/genesis
+rm -r %{buildroot}%{_libdir}/genesis/{src,man}
+find %{buildroot}%{_libdir}/genesis -name '*simrc' -print -delete
+
+mkdir -p %{buildroot}%{_bindir}
+mv %{buildroot}%{_libdir}/genesis/genesis %{buildroot}%{_bindir}/
+
+mkdir -p %{buildroot}%{_includedir}
+mv %{buildroot}%{_libdir}/genesis/include %{buildroot}%{_includedir}/genesis
 
 mkdir -p %{buildroot}%{_pkgdocdir}
-cp Doc Tutorials Hyperdoc -r %{buildroot}%{_pkgdocdir}/
+mv %{buildroot}%{_libdir}/genesis/{Doc,Tutorials,Hyperdoc} %{buildroot}%{_pkgdocdir}/
 
-cat >>%{buildroot}%{_datadir}/%{name}/startup/.simrc <<EOF
+mv %{buildroot}%{_libdir}/genesis/bin/convert %{buildroot}%{_bindir}/genesis-convert
+install -D man/man1/convert.1 %{buildroot}%{_mandir}/man1/genesis-convert.1
+cp src/libsh %{buildroot}%{_libdir}/genesis/lib
+
+cat >>%{buildroot}%{_libdir}/genesis/startup/.simrc <<EOF
 setenv SIMPATH . \
                %{instdir}/startup \
                %{instdir}/Scripts/neurokit \
@@ -110,11 +105,11 @@ EOF
 
 # add emacs mode
 
-#make NETCDFOBJ='$(SIMLIB)/netcdflib.o %{_libdir}/libnetcdf.a'
-
 %files
 %{_bindir}/*
-%{_datadir}/%{name}
+%{_libdir}/%{realname}
+%exclude %{_libdir}/%{realname}/lib
+%exclude %{_libdir}/%{realname}/*make
 %{_mandir}/man1/*
 %doc AUTHORS COPYRIGHT CONTACTING.GENESIS ChangeLog GPLicense LGPLicense
 %exclude %{_pkgdocdir}/Tutorials/
@@ -122,8 +117,9 @@ EOF
 
 %files devel
 %doc COPYRIGHT
-%{_libdir}/libgenesis.a
-%{_libexecdir}/genesis/
+%{_includedir}/%{realname}/
+%{_libdir}/%{realname}/lib
+%{_libdir}/%{realname}/*make
 
 %files docs
 %dir %doc %{_pkgdocdir}
