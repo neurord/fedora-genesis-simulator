@@ -5,7 +5,7 @@
 Name:    %{realname}-simulator
 Summary: A simulation platform for biochemical reactions
 Version: 2.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 Url:     http://krasnow1.gmu.edu/CENlab/software.html
 Source0: http://krasnow1.gmu.edu/CENlab/software/chemesis%{version}.tgz
 Source1: chemesis2.4-chem-Makefile
@@ -53,8 +53,8 @@ make clean
 rm -f chemesis
 
 %build
-make GENESIS_LIB=/usr/lib64/genesis/lib \
-     GENESIS_INCLUDE=-I/usr/include/genesis \
+make GENESIS_LIB=%{_libdir}/genesis/lib \
+     GENESIS_INCLUDE=-I%{_includedir}/genesis \
      SIMLIB='$(GENESIS_LIB)' \
      NETCDFOBJ='$(GENESIS_LIB)/netcdflib.o' \
      SIMSRC='$(SIMLIB)'
@@ -64,7 +64,7 @@ install -D chemesis %{buildroot}%{_bindir}/chemesis
 mkdir -p %{buildroot}%{_datadir}/chemesis
 cp -pr Scripts %{buildroot}%{_datadir}/chemesis/
 
-cp /usr/share/doc/genesis-simulator-devel/COPYRIGHT .
+cp %{_docdir}/genesis-simulator-devel*/COPYRIGHT .
 
 %files
 %{_bindir}/chemesis
