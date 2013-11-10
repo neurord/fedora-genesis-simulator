@@ -5,7 +5,7 @@
 Name:    %{realname}-simulator
 Summary: A simulation platform for biochemical reactions
 Version: 2.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 Url:     http://krasnow1.gmu.edu/CENlab/software.html
 Source0: http://krasnow1.gmu.edu/CENlab/software/chemesis%{version}.tgz
 Source1: chemesis2.4-chem-Makefile
@@ -13,7 +13,7 @@ License: GPLv2.1+ and LGPLv2.1+
 
 BuildRequires: bison flex flex-devel
 BuildRequires: ncurses-devel
-BuildRequires: libX11-devel libXt-devel
+BuildRequires: libX11-devel libXt-devel libXext-devel libXmu-devel
 BuildRequires: netcdf-devel
 BuildRequires: genesis-simulator-devel
 
