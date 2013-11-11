@@ -5,7 +5,7 @@
 Name: %{realname}-simulator
 Summary: A general purpose simulation platform
 Version: 2.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 Url: http://www.genesis-sim.org/GENESIS/
 Source0: http://www.genesis-sim.org/GENESIS/genesis-ftp/%{realname}-%{version}-src.tar.bz2
 License: GPLv2.1+ and LGPLv2.1+
@@ -76,7 +76,8 @@ make -C src %{?_smp_mflags} genesis
 %install
 make -C src install INSTALLDIR=%{buildroot}%{_libdir}/genesis
 rm -r %{buildroot}%{_libdir}/genesis/{src,man}
-find %{buildroot}%{_libdir}/genesis -name '*simrc' -print -delete
+rm -v %{buildroot}%{_libdir}/genesis/.*simrc
+chmod -x %{buildroot}%{_libdir}/genesis/startup/*
 
 mkdir -p %{buildroot}%{_bindir}
 mv %{buildroot}%{_libdir}/genesis/genesis %{buildroot}%{_bindir}/
@@ -91,17 +92,8 @@ mv %{buildroot}%{_libdir}/genesis/bin/convert %{buildroot}%{_bindir}/genesis-con
 install -D man/man1/convert.1 %{buildroot}%{_mandir}/man1/genesis-convert.1
 cp src/libsh %{buildroot}%{_libdir}/genesis/lib
 
-cat >>%{buildroot}%{_libdir}/genesis/startup/.simrc <<EOF
-setenv SIMPATH . \
-               %{instdir}/startup \
-               %{instdir}/Scripts/neurokit \
-               %{instdir}/Scripts/neurokit/prototypes
-setenv SIMNOTES {getenv HOME}/.genesis-notes
-setenv GENESIS_HELP %{_pkgdocdir}/Doc
-
-# set up default schedule
-schedule
-EOF
+find %{buildroot}%{_libdir}/genesis/startup/ -name '*simrc' -exec \
+    sed -i 's|%{buildroot}||g' {} \;
 
 # add emacs mode
 
