@@ -5,10 +5,9 @@
 Name:    %{realname}-simulator
 Summary: A simulation platform for biochemical reactions
 Version: 2.4
-Release: 3%{?dist}
+Release: 4%{?dist}
 Url:     http://krasnow1.gmu.edu/CENlab/software.html
 Source0: http://krasnow1.gmu.edu/CENlab/software/chemesis%{version}.tgz
-Source1: chemesis2.4-chem-Makefile
 License: GPLv2.1+ and LGPLv2.1+
 
 BuildRequires: bison flex flex-devel
@@ -27,8 +26,6 @@ concentration. It is an extension of the genesis simulator.
 
 %prep
 %setup -q -n %{realname}%{version}
-ln -sf Makefile2.3 chan/Makefile
-test -f chem/Makefile2.3 || mv chem/#Makefile2.3 chem/Makefile2.3
 
 cat >>Makefile <<EOF
 MACHINE=Linux
@@ -48,7 +45,6 @@ TERMCAP=-lncurses
 TERMOPT=-DTERMIO -DDONT_USE_SIGIO
 EOF
 
-cp %{SOURCE1} chem/Makefile
 make clean
 rm -f chemesis
 
